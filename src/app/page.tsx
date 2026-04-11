@@ -3,9 +3,11 @@ import { getCurrentUser } from '@/lib/actions/auth'
 import { getMonthlyRanking, getRecentEvents } from '@/lib/actions/ranking'
 
 export default async function HomePage() {
-  const user = await getCurrentUser()
-  const monthlyRanking = await getMonthlyRanking()
-  const recentEvents = await getRecentEvents()
+  const [user, monthlyRanking, recentEvents] = await Promise.all([
+    getCurrentUser(),
+    getMonthlyRanking(),
+    getRecentEvents(),
+  ])
 
   return (
     <div className="px-4 pt-8 space-y-6">
