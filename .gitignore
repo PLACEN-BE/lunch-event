@@ -5,3 +5,5 @@ out
 build
 *.tsbuildinfo
 next-env.d.ts
+.bkit/
+.claude/settings.local.json
