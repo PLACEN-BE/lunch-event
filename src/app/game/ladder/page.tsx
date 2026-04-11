@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGameStore } from '@/stores/game-store'
-import { pickWinners } from '@/lib/game-engine'
 import { saveGameResult } from '@/lib/actions/game'
 import { LadderGame } from '@/components/game/LadderGame'
 import { GameResult } from '@/components/game/GameResult'
@@ -17,14 +16,11 @@ export default function LadderPage() {
   useEffect(() => {
     if (participants.length < 2) {
       router.replace('/game')
-      return
     }
-    if (winners.length === 0) {
-      setWinners(pickWinners(participants, pickCount))
-    }
-  }, [participants, pickCount, winners, setWinners, router])
+  }, [participants, router])
 
-  function handleComplete() {
+  function handleComplete(ladderWinners: string[]) {
+    setWinners(ladderWinners)
     setIsRevealed(true)
   }
 
@@ -49,7 +45,6 @@ export default function LadderPage() {
       {!isRevealed ? (
         <LadderGame
           participants={participants}
-          winners={winners}
           pickCount={pickCount}
           onComplete={handleComplete}
         />
