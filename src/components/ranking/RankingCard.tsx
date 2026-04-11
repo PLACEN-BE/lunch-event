@@ -1,4 +1,5 @@
 import type { RankingEntry } from '@/types'
+import { Avatar } from '@/components/ui/Avatar'
 
 const medals = ['👑', '🥈', '🥉']
 
@@ -18,6 +19,7 @@ export function RankingCard({ entry, rank }: { entry: RankingEntry; rank: number
       <div className="text-2xl w-8 text-center font-black">
         {medal ?? <span className="text-foreground/30 text-base">{rank + 1}</span>}
       </div>
+      <Avatar src={entry.avatar_url} nickname={entry.nickname} size={36} />
       <div className="flex-1 min-w-0">
         <p className="font-bold truncate">{entry.nickname}</p>
         <p className="text-xs text-foreground/40">@{entry.login_id}</p>

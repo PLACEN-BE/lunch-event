@@ -7,6 +7,7 @@ const navItems = [
   { href: '/', label: '홈', icon: '🏠' },
   { href: '/game', label: '게임', icon: '🎮' },
   { href: '/ranking', label: '랭킹', icon: '🏆' },
+  { href: '/my', label: 'MY', icon: '👤' },
 ]
 
 export function BottomNav() {

@@ -2,6 +2,7 @@ export interface User {
   id: string
   user_id: string
   nickname: string
+  avatar_url?: string | null
   created_at: string
 }
 
@@ -25,6 +26,7 @@ export interface RankingEntry {
   login_id: string
   uid: string
   treat_count: number
+  avatar_url?: string | null
 }
 
 export type GameMode = 'card_flip' | 'ladder'

@@ -6,6 +6,7 @@ CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id VARCHAR(20) UNIQUE NOT NULL,
   nickname VARCHAR(10) NOT NULL,
+  avatar_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -39,13 +40,14 @@ SELECT
   u.nickname,
   u.user_id AS login_id,
   u.id AS uid,
+  u.avatar_url,
   COUNT(ep.id) AS treat_count
 FROM event_participants ep
 JOIN events e ON ep.event_id = e.id
 JOIN users u ON ep.user_id = u.id
 WHERE ep.is_payer = TRUE
   AND e.created_at >= date_trunc('month', CURRENT_DATE)
-GROUP BY u.id, u.nickname, u.user_id
+GROUP BY u.id, u.nickname, u.user_id, u.avatar_url
 ORDER BY treat_count DESC;
 
 -- 전체 누적 랭킹 뷰
@@ -54,12 +56,13 @@ SELECT
   u.nickname,
   u.user_id AS login_id,
   u.id AS uid,
+  u.avatar_url,
   COUNT(ep.id) AS treat_count
 FROM event_participants ep
 JOIN events e ON ep.event_id = e.id
 JOIN users u ON ep.user_id = u.id
 WHERE ep.is_payer = TRUE
-GROUP BY u.id, u.nickname, u.user_id
+GROUP BY u.id, u.nickname, u.user_id, u.avatar_url
 ORDER BY treat_count DESC;
 
 -- RLS 정책
