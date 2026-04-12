@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import { drawFortune, savePersonalPick } from '@/lib/fortune-data'
 import { playWin } from '@/lib/sounds'
@@ -86,7 +86,6 @@ export function FortuneCard({ onDraw }: FortuneCardProps) {
           {/* 뒷면 — 운세 결과 */}
           <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white to-purple-50 border-2 border-purple-100 shadow-xl p-6 flex flex-col items-center justify-center" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
             {fortune && (
-              <AnimatePresence>
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -132,7 +131,6 @@ export function FortuneCard({ onDraw }: FortuneCardProps) {
                     🕐 행운의 점심시간 {fortune.luckyTime}
                   </p>
                 </motion.div>
-              </AnimatePresence>
             )}
           </div>
         </motion.div>

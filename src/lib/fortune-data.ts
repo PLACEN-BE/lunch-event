@@ -115,6 +115,11 @@ function dateToSeed(date: Date): number {
   return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate()
 }
 
+function getTodayKey(): string {
+  const d = new Date()
+  return `fortune_${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
+}
+
 function hashString(str: string): number {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
@@ -140,9 +145,8 @@ export function drawFortune(): FortuneResult {
   const score = Math.floor(Math.random() * 21) + 80 // 80 ~ 100
 
   // 행운의 점심 시간 (11:30 ~ 13:00)
-  const hour = 11 + Math.floor(Math.random() * 2)
-  const minute = Math.floor(Math.random() * 4) * 15 + (hour === 11 ? 30 : 0)
-  const luckyTime = `${hour}:${minute.toString().padStart(2, '0')}`
+  const LUCKY_TIMES = ['11:30', '11:45', '12:00', '12:15', '12:30', '12:45', '13:00']
+  const luckyTime = LUCKY_TIMES[Math.floor(Math.random() * LUCKY_TIMES.length)]
 
   return { menu, message, score, luckyTime }
 }
@@ -164,15 +168,19 @@ export function getDailyStats(): DailyStat[] {
   const seed = dateToSeed(today)
   const rng = mulberry32(seed)
 
-  // 오늘의 인기 메뉴 6개 선정 (시드 기반)
-  const shuffled = [...LUNCH_MENUS].sort(() => rng() - 0.5)
+  // 오늘의 인기 메뉴 6개 선정 (Fisher-Yates 시드 셔플)
+  const shuffled = [...LUNCH_MENUS]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
   const todayMenus = shuffled.slice(0, 6)
 
   // 가상 커뮤니티 투표수 생성
   const rawCounts = todayMenus.map(() => Math.floor(rng() * 40) + 5)
 
   // 개인 뽑기 기록 합산
-  const todayKey = `fortune_${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`
+  const todayKey = getTodayKey()
   let personalPicks: string[] = []
   if (typeof window !== 'undefined') {
     try {
@@ -212,8 +220,7 @@ export function getDailyStats(): DailyStat[] {
  */
 export function savePersonalPick(menuName: string): void {
   if (typeof window === 'undefined') return
-  const today = new Date()
-  const key = `fortune_${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`
+  const key = getTodayKey()
   try {
     const picks = JSON.parse(localStorage.getItem(key) || '[]')
     picks.push(menuName)
