@@ -126,10 +126,6 @@ export function FortuneCard({ onDraw }: FortuneCardProps) {
                     &ldquo;{fortune.message}&rdquo;
                   </p>
 
-                  {/* 행운의 시간 */}
-                  <p className="text-xs text-purple-400">
-                    🕐 행운의 점심시간 {fortune.luckyTime}
-                  </p>
                 </motion.div>
             )}
           </div>

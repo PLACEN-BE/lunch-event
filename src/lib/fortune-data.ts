@@ -133,7 +133,6 @@ export interface FortuneResult {
   menu: LunchMenu
   message: string
   score: number
-  luckyTime: string
 }
 
 /**
@@ -144,11 +143,7 @@ export function drawFortune(): FortuneResult {
   const message = FORTUNE_MESSAGES[Math.floor(Math.random() * FORTUNE_MESSAGES.length)]
   const score = Math.floor(Math.random() * 21) + 80 // 80 ~ 100
 
-  // 행운의 점심 시간 (11:30 ~ 13:00)
-  const LUCKY_TIMES = ['11:30', '11:45', '12:00', '12:15', '12:30', '12:45', '13:00']
-  const luckyTime = LUCKY_TIMES[Math.floor(Math.random() * LUCKY_TIMES.length)]
-
-  return { menu, message, score, luckyTime }
+  return { menu, message, score }
 }
 
 /* ── 오늘의 커뮤니티 통계 (날짜 시드 기반) ─────────── */
