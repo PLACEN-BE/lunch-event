@@ -21,24 +21,32 @@ export default function GameSetupPage() {
   return (
     <div className="px-4 pt-6 space-y-8">
       <div>
-        <h1 className="text-2xl font-black">🎮 게임 설정</h1>
-        <p className="text-foreground/40 text-sm mt-1">참여자를 추가하고 게임을 시작하세요</p>
+        <h1 className="text-2xl font-black">🎲 누가 쏠까?</h1>
+        <p className="text-foreground/40 text-sm mt-1">
+          참여자를 추가하고 게임을 시작하세요
+        </p>
       </div>
 
       <section className="space-y-2">
-        <h2 className="text-sm font-bold text-foreground/60 uppercase tracking-wider">참여자</h2>
+        <h2 className="text-sm font-bold text-foreground/60 uppercase tracking-wider">
+          참여자
+        </h2>
         <ParticipantInput />
       </section>
 
       {participants.length >= 2 && (
         <>
           <section className="space-y-2">
-            <h2 className="text-sm font-bold text-foreground/60 uppercase tracking-wider">뽑을 인원</h2>
+            <h2 className="text-sm font-bold text-foreground/60 uppercase tracking-wider">
+              뽑을 인원
+            </h2>
             <PickCountSelector />
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-sm font-bold text-foreground/60 uppercase tracking-wider">게임 모드</h2>
+            <h2 className="text-sm font-bold text-foreground/60 uppercase tracking-wider">
+              게임 모드
+            </h2>
             <GameModeSelector />
           </section>
         </>
@@ -50,7 +58,10 @@ export default function GameSetupPage() {
         size="lg"
         className="w-full"
       >
-        🎲 {canStart ? `${participants.length}명 중 ${pickCount}명 뽑기!` : '2명 이상 추가해주세요'}
+        🎲{' '}
+        {canStart
+          ? `${participants.length}명 중 ${pickCount}명 뽑기!`
+          : '2명 이상 추가해주세요'}
       </Button>
     </div>
   )
