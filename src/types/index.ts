@@ -31,6 +31,14 @@ export interface RankingEntry {
 
 export type GameMode = 'card_flip' | 'ladder'
 
+export interface MenuItem {
+  id: string
+  name: string
+  weight: number
+}
+
+export type MenuGameMode = 'roulette' | 'slot'
+
 export interface GameState {
   participants: string[]
   pickCount: number
