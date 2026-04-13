@@ -4,9 +4,9 @@ import { getMonthlyRanking, getRecentEvents } from '@/lib/actions/ranking'
 
 export default async function HomePage() {
   const [user, monthlyRanking, recentEvents] = await Promise.all([
-    getCurrentUser(),
-    getMonthlyRanking(),
-    getRecentEvents(),
+    getCurrentUser().catch(() => null),
+    getMonthlyRanking().catch(() => []),
+    getRecentEvents().catch(() => []),
   ])
 
   return (
