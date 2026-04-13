@@ -51,7 +51,7 @@ export async function signUp(formData: FormData) {
     path: '/',
   })
 
-  redirect('/')
+  return { success: true }
 }
 
 export async function signIn(formData: FormData) {
@@ -81,7 +81,7 @@ export async function signIn(formData: FormData) {
     path: '/',
   })
 
-  redirect('/')
+  return { success: true }
 }
 
 export async function signOut() {

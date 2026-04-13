@@ -1,11 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { signIn, signUp } from '@/lib/actions/auth'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 
 export function LoginForm() {
+  const router = useRouter()
   const [mode, setMode] = useState<'login' | 'signup'>('login')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -19,8 +21,11 @@ export function LoginForm() {
       if (result.error.includes('가입하시겠습니까')) {
         setMode('signup')
       }
+      setLoading(false)
+      return
     }
-    setLoading(false)
+    router.push('/')
+    router.refresh()
   }
 
   return (
