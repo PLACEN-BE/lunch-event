@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import type { RankingEntry } from '@/types'
+import type { RankingEntry, MenuVoteEntry, MenuMvpEntry } from '@/types'
 
 export async function getMonthlyRanking(): Promise<RankingEntry[]> {
   const supabase = await createClient()
@@ -43,4 +43,36 @@ export async function getRecentEvents() {
     .limit(5)
 
   return data ?? []
+}
+
+export async function getWeeklyMenuRanking(): Promise<MenuVoteEntry[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('weekly_menu_rankings')
+    .select('*')
+
+  if (error) return []
+  return data ?? []
+}
+
+export async function getMonthlyMenuRanking(): Promise<MenuVoteEntry[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('monthly_menu_rankings')
+    .select('*')
+
+  if (error) return []
+  return data ?? []
+}
+
+export async function getWeeklyMenuMvp(): Promise<MenuMvpEntry | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('weekly_menu_mvp')
+    .select('*')
+    .limit(1)
+    .single()
+
+  if (error) return null
+  return data ?? null
 }

@@ -39,6 +39,33 @@ export interface MenuItem {
 
 export type MenuGameMode = 'roulette' | 'slot'
 
+export interface MenuVoteEntry {
+  menu_category: string
+  vote_count: number
+}
+
+export interface MenuMvpEntry {
+  nickname: string
+  login_id: string
+  uid: string
+  avatar_url?: string | null
+  menu_category: string
+  pick_count: number
+}
+
+export const MENU_CATEGORIES = [
+  { emoji: '🍚', name: '한식' },
+  { emoji: '🍜', name: '중식' },
+  { emoji: '🍝', name: '양식' },
+  { emoji: '🍣', name: '일식' },
+  { emoji: '🍔', name: '패스트푸드' },
+  { emoji: '🥗', name: '샐러드' },
+  { emoji: '🍛', name: '카레/태국' },
+  { emoji: '🥪', name: '샌드위치' },
+  { emoji: '🍱', name: '도시락' },
+  { emoji: '🤷', name: '기타' },
+] as const
+
 export interface GameState {
   participants: string[]
   pickCount: number

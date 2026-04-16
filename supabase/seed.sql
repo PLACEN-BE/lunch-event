@@ -1,0 +1,97 @@
+-- lunch-event Seed Data
+-- avatars 스토리지 버킷 + 테스트 유저
+
+-- avatars 버킷 생성
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'avatars',
+  'avatars',
+  true,
+  5242880,
+  ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- 스토리지 RLS 정책
+CREATE POLICY "Avatar upload" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'avatars');
+
+CREATE POLICY "Avatar read" ON storage.objects
+  FOR SELECT USING (bucket_id = 'avatars');
+
+CREATE POLICY "Avatar update" ON storage.objects
+  FOR UPDATE USING (bucket_id = 'avatars');
+
+CREATE POLICY "Avatar delete" ON storage.objects
+  FOR DELETE USING (bucket_id = 'avatars');
+
+-- 테스트 유저
+INSERT INTO users (id, user_id, nickname) VALUES
+  ('a0000000-0000-0000-0000-000000000001', 'alice', '앨리스'),
+  ('a0000000-0000-0000-0000-000000000002', 'bob', '밥'),
+  ('a0000000-0000-0000-0000-000000000003', 'charlie', '찰리')
+ON CONFLICT (user_id) DO NOTHING;
+
+-- 테스트 게임 데이터 (이번 달)
+INSERT INTO events (id, game_mode, created_by, created_at) VALUES
+  ('e0000000-0000-0000-0000-000000000001', 'card_flip', 'a0000000-0000-0000-0000-000000000001', NOW() - INTERVAL '1 day'),
+  ('e0000000-0000-0000-0000-000000000002', 'ladder',    'a0000000-0000-0000-0000-000000000002', NOW() - INTERVAL '2 days'),
+  ('e0000000-0000-0000-0000-000000000003', 'card_flip', 'a0000000-0000-0000-0000-000000000001', NOW() - INTERVAL '3 days'),
+  ('e0000000-0000-0000-0000-000000000004', 'ladder',    'a0000000-0000-0000-0000-000000000003', NOW() - INTERVAL '4 days'),
+  ('e0000000-0000-0000-0000-000000000005', 'card_flip', 'a0000000-0000-0000-0000-000000000002', NOW() - INTERVAL '5 days'),
+  ('e0000000-0000-0000-0000-000000000006', 'card_flip', 'a0000000-0000-0000-0000-000000000001', NOW() - INTERVAL '6 days'),
+  ('e0000000-0000-0000-0000-000000000007', 'ladder',    'a0000000-0000-0000-0000-000000000003', NOW() - INTERVAL '7 days');
+
+-- 참여자 + 한턱 기록 (alice 5회, bob 3회, charlie 1회)
+INSERT INTO event_participants (event_id, user_id, is_payer) VALUES
+  -- 게임1: alice, bob 참여 → alice 한턱
+  ('e0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', true),
+  ('e0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000002', false),
+  -- 게임2: bob, charlie 참여 → bob 한턱
+  ('e0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000002', true),
+  ('e0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000003', false),
+  -- 게임3: alice, charlie 참여 → alice 한턱
+  ('e0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001', true),
+  ('e0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000003', false),
+  -- 게임4: 3명 참여 → alice 한턱
+  ('e0000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000001', true),
+  ('e0000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000002', false),
+  ('e0000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000003', false),
+  -- 게임5: alice, bob 참여 → bob 한턱
+  ('e0000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000001', false),
+  ('e0000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000002', true),
+  -- 게임6: alice, bob 참여 → alice 한턱
+  ('e0000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000001', true),
+  ('e0000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000002', false),
+  -- 게임7: 3명 참여 → alice 한턱 + charlie 한턱
+  ('e0000000-0000-0000-0000-000000000007', 'a0000000-0000-0000-0000-000000000001', true),
+  ('e0000000-0000-0000-0000-000000000007', 'a0000000-0000-0000-0000-000000000002', false),
+  ('e0000000-0000-0000-0000-000000000007', 'a0000000-0000-0000-0000-000000000003', true);
+
+-- 메뉴 투표 테스트 데이터 (최근 7일)
+-- 한식이 가장 많고(5), 샐러드가 가장 적음(1) → Best=한식, Worst=샐러드
+INSERT INTO menu_votes (user_id, menu_category, voted_at) VALUES
+  -- 6일 전
+  ('a0000000-0000-0000-0000-000000000001', '한식',     CURRENT_DATE - INTERVAL '6 days'),
+  ('a0000000-0000-0000-0000-000000000002', '일식',     CURRENT_DATE - INTERVAL '6 days'),
+  ('a0000000-0000-0000-0000-000000000003', '중식',     CURRENT_DATE - INTERVAL '6 days'),
+  -- 5일 전
+  ('a0000000-0000-0000-0000-000000000001', '한식',     CURRENT_DATE - INTERVAL '5 days'),
+  ('a0000000-0000-0000-0000-000000000002', '한식',     CURRENT_DATE - INTERVAL '5 days'),
+  ('a0000000-0000-0000-0000-000000000003', '양식',     CURRENT_DATE - INTERVAL '5 days'),
+  -- 4일 전
+  ('a0000000-0000-0000-0000-000000000001', '한식',     CURRENT_DATE - INTERVAL '4 days'),
+  ('a0000000-0000-0000-0000-000000000002', '중식',     CURRENT_DATE - INTERVAL '4 days'),
+  ('a0000000-0000-0000-0000-000000000003', '일식',     CURRENT_DATE - INTERVAL '4 days'),
+  -- 3일 전
+  ('a0000000-0000-0000-0000-000000000001', '일식',     CURRENT_DATE - INTERVAL '3 days'),
+  ('a0000000-0000-0000-0000-000000000002', '한식',     CURRENT_DATE - INTERVAL '3 days'),
+  ('a0000000-0000-0000-0000-000000000003', '패스트푸드', CURRENT_DATE - INTERVAL '3 days'),
+  -- 2일 전
+  ('a0000000-0000-0000-0000-000000000001', '한식',     CURRENT_DATE - INTERVAL '2 days'),
+  ('a0000000-0000-0000-0000-000000000002', '양식',     CURRENT_DATE - INTERVAL '2 days'),
+  ('a0000000-0000-0000-0000-000000000003', '중식',     CURRENT_DATE - INTERVAL '2 days'),
+  -- 1일 전
+  ('a0000000-0000-0000-0000-000000000001', '중식',     CURRENT_DATE - INTERVAL '1 day'),
+  ('a0000000-0000-0000-0000-000000000002', '일식',     CURRENT_DATE - INTERVAL '1 day'),
+  ('a0000000-0000-0000-0000-000000000003', '샐러드',   CURRENT_DATE - INTERVAL '1 day');
