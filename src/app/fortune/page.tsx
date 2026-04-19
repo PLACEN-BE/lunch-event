@@ -1,15 +1,12 @@
-'use client'
-
-import { useState } from 'react'
 import { FortuneCard } from '@/components/fortune/FortuneCard'
 import { DailyStats } from '@/components/fortune/DailyStats'
+import { getTodayFortuneState, getTodayFortuneStats } from '@/lib/actions/fortune'
 
-export default function FortunePage() {
-  const [statsKey, setStatsKey] = useState(0)
-
-  function handleDraw() {
-    setStatsKey((k) => k + 1)
-  }
+export default async function FortunePage() {
+  const [state, statsResult] = await Promise.all([
+    getTodayFortuneState(),
+    getTodayFortuneStats(),
+  ])
 
   return (
     <div className="px-4 pt-6 pb-4 space-y-8">
@@ -20,9 +17,9 @@ export default function FortunePage() {
         </p>
       </div>
 
-      <FortuneCard onDraw={handleDraw} />
+      <FortuneCard initialState={state} />
 
-      <DailyStats refreshKey={statsKey} />
+      <DailyStats stats={statsResult.stats} total={statsResult.total} />
     </div>
   )
 }

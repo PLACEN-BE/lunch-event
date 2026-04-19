@@ -1,6 +1,6 @@
 /**
- * 오늘의 메뉴 운명 — 데이터 & 생성 로직
- * 바나프레소 스타일 운세 문구 + 행운 점수 + 점심 메뉴 추천
+ * 오늘의 메뉴 운명 — 정적 데이터 + 순수 생성기
+ * 뽑기 기록/통계는 src/lib/actions/fortune.ts 에서 DB로 관리
  */
 
 /* ── 운세 문구 (바나프레소 스타일, 짧고 긍정적) ────────── */
@@ -100,34 +100,6 @@ export const LUNCH_MENUS: LunchMenu[] = [
   { name: '카레', emoji: '🍛', category: '아시안' },
 ]
 
-/* ── Mulberry32 시드 기반 PRNG ───────────────────── */
-function mulberry32(seed: number): () => number {
-  let a = seed | 0
-  return () => {
-    a = (a + 0x6d2b79f5) | 0
-    let t = Math.imul(a ^ (a >>> 15), 1 | a)
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
-
-function dateToSeed(date: Date): number {
-  return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate()
-}
-
-function getTodayKey(): string {
-  const d = new Date()
-  return `fortune_${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
-}
-
-function hashString(str: string): number {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0
-  }
-  return Math.abs(hash)
-}
-
 /* ── 운세 결과 타입 ──────────────────────────────── */
 export interface FortuneResult {
   menu: LunchMenu
@@ -136,7 +108,7 @@ export interface FortuneResult {
 }
 
 /**
- * 운세 생성 — 완전 랜덤 (뽑을 때마다 다른 결과)
+ * 운세 생성 — 서버 전용. 서버 액션에서만 호출하세요.
  */
 export function drawFortune(): FortuneResult {
   const menu = LUNCH_MENUS[Math.floor(Math.random() * LUNCH_MENUS.length)]
@@ -144,81 +116,4 @@ export function drawFortune(): FortuneResult {
   const score = Math.floor(Math.random() * 21) + 80 // 80 ~ 100
 
   return { menu, message, score }
-}
-
-/* ── 오늘의 커뮤니티 통계 (날짜 시드 기반) ─────────── */
-export interface DailyStat {
-  menu: LunchMenu
-  count: number
-  pct: number
-}
-
-/**
- * 오늘의 메뉴 통계 생성
- * 날짜를 시드로 하여 같은 날이면 모든 사용자에게 동일한 통계 표시
- * + localStorage에 저장된 개인 뽑기 결과 합산
- */
-export function getDailyStats(): DailyStat[] {
-  const today = new Date()
-  const seed = dateToSeed(today)
-  const rng = mulberry32(seed)
-
-  // 오늘의 인기 메뉴 6개 선정 (Fisher-Yates 시드 셔플)
-  const shuffled = [...LUNCH_MENUS]
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1))
-    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-  }
-  const todayMenus = shuffled.slice(0, 6)
-
-  // 가상 커뮤니티 투표수 생성
-  const rawCounts = todayMenus.map(() => Math.floor(rng() * 40) + 5)
-
-  // 개인 뽑기 기록 합산
-  const todayKey = getTodayKey()
-  let personalPicks: string[] = []
-  if (typeof window !== 'undefined') {
-    try {
-      personalPicks = JSON.parse(localStorage.getItem(todayKey) || '[]')
-    } catch { /* ignore */ }
-  }
-
-  // 개인 뽑기를 통계에 추가
-  personalPicks.forEach((name) => {
-    const idx = todayMenus.findIndex((m) => m.name === name)
-    if (idx >= 0) {
-      rawCounts[idx] += 1
-    } else {
-      // 새 메뉴 추가
-      const menu = LUNCH_MENUS.find((m) => m.name === name)
-      if (menu) {
-        todayMenus.push(menu)
-        rawCounts.push(1)
-      }
-    }
-  })
-
-  const total = rawCounts.reduce((s, c) => s + c, 0)
-
-  return todayMenus
-    .map((menu, i) => ({
-      menu,
-      count: rawCounts[i],
-      pct: Math.round((rawCounts[i] / total) * 100),
-    }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 6)
-}
-
-/**
- * 개인 뽑기 기록 저장 (localStorage)
- */
-export function savePersonalPick(menuName: string): void {
-  if (typeof window === 'undefined') return
-  const key = getTodayKey()
-  try {
-    const picks = JSON.parse(localStorage.getItem(key) || '[]')
-    picks.push(menuName)
-    localStorage.setItem(key, JSON.stringify(picks))
-  } catch { /* ignore */ }
 }

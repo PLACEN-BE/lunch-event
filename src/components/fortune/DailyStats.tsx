@@ -1,9 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { getDailyStats } from '@/lib/fortune-data'
-import type { DailyStat } from '@/lib/fortune-data'
+import type { DailyFortuneStat } from '@/lib/actions/fortune'
 
 const BAR_COLORS = [
   'from-purple-500 to-violet-500',
@@ -14,16 +12,28 @@ const BAR_COLORS = [
   'from-indigo-500 to-blue-500',
 ]
 
-export function DailyStats({ refreshKey }: { refreshKey: number }) {
-  const [stats, setStats] = useState<DailyStat[]>([])
+interface DailyStatsProps {
+  stats: DailyFortuneStat[]
+  total: number
+}
 
-  useEffect(() => {
-    setStats(getDailyStats())
-  }, [refreshKey])
+export function DailyStats({ stats, total }: DailyStatsProps) {
+  if (stats.length === 0) {
+    return (
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-bold text-foreground/60 uppercase tracking-wider">
+            오늘의 메뉴 통계
+          </h2>
+        </div>
+        <div className="text-center py-6 text-foreground/30 bg-white rounded-3xl shadow-sm text-sm">
+          아직 오늘 뽑은 사람이 없어요
+        </div>
+      </section>
+    )
+  }
 
-  if (stats.length === 0) return null
-
-  const maxPct = Math.max(...stats.map((s) => s.pct))
+  const maxCount = Math.max(1, ...stats.map((s) => s.count))
 
   return (
     <section className="space-y-3">
@@ -32,7 +42,7 @@ export function DailyStats({ refreshKey }: { refreshKey: number }) {
           오늘의 메뉴 통계
         </h2>
         <span className="text-xs text-foreground/30">
-          {stats.reduce((s, d) => s + d.count, 0)}명 참여
+          총 {total}회 뽑힘
         </span>
       </div>
 
@@ -55,7 +65,7 @@ export function DailyStats({ refreshKey }: { refreshKey: number }) {
               <motion.div
                 className={`h-full rounded-full bg-gradient-to-r ${BAR_COLORS[i % BAR_COLORS.length]}`}
                 initial={{ width: 0 }}
-                animate={{ width: `${(stat.pct / maxPct) * 100}%` }}
+                animate={{ width: `${(stat.count / maxCount) * 100}%` }}
                 transition={{ delay: i * 0.08 + 0.2, duration: 0.6, ease: 'easeOut' }}
               />
             </div>
