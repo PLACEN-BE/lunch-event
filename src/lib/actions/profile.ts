@@ -66,7 +66,6 @@ export async function updateAvatarUrl(userId: string, path: string) {
   }
 
   const admin = createAdminClient()
-
   const { data: publicUrlData } = admin.storage
     .from('avatars')
     .getPublicUrl(path)

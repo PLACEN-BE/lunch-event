@@ -5,7 +5,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { getSignedUploadUrl, updateAvatarUrl } from '@/lib/actions/profile'
 import { useRouter } from 'next/navigation'
 
-const MAX_FILE_SIZE = 200 * 1024 * 1024 // 200MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB (리사이즈 전 원본 기준)
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const RESIZE_MAX = 400
 const RESIZE_QUALITY = 0.8
@@ -71,7 +71,7 @@ export function AvatarUpload({ userId, currentAvatarUrl, nickname }: AvatarUploa
       return
     }
     if (file.size > MAX_FILE_SIZE) {
-      setError('파일 크기가 200MB를 초과합니다.')
+      setError('파일 크기가 10MB를 초과합니다.')
       return
     }
 
