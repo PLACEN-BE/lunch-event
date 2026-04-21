@@ -1,12 +1,14 @@
 import Link from 'next/link'
 import { getCurrentUser } from '@/lib/actions/auth'
 import { getMonthlyRanking, getRecentEvents } from '@/lib/actions/ranking'
+import { getTopFortuneMenus } from '@/lib/actions/fortune'
 
 export default async function HomePage() {
-  const [user, monthlyRanking, recentEvents] = await Promise.all([
+  const [user, monthlyRanking, recentEvents, topFortuneMenus] = await Promise.all([
     getCurrentUser().catch(() => null),
     getMonthlyRanking().catch(() => []),
     getRecentEvents().catch(() => []),
+    getTopFortuneMenus(3).catch(() => []),
   ])
 
   return (
@@ -87,6 +89,35 @@ export default async function HomePage() {
                   <span className="text-xl">{medals[i]}</span>
                   <span className="font-bold flex-1">{entry.nickname}</span>
                   <span className="text-primary font-bold">{entry.treat_count}회</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* Top 3 Most Drawn Fortune Menus */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-bold">🔮 인기 운세 메뉴</h2>
+          <Link href="/fortune" className="text-xs text-primary font-medium">
+            운세 보기 →
+          </Link>
+        </div>
+        {topFortuneMenus.length === 0 ? (
+          <div className="text-center py-6 text-foreground/30 bg-white rounded-3xl shadow-sm text-sm">
+            아직 운세 기록이 없습니다
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {topFortuneMenus.map((item, i) => {
+              const medals = ['👑', '🥈', '🥉']
+              return (
+                <div key={item.menu.name} className="flex items-center gap-3 px-4 py-3 bg-white rounded-2xl shadow-sm">
+                  <span className="text-xl">{medals[i]}</span>
+                  <span className="text-xl">{item.menu.emoji}</span>
+                  <span className="font-bold flex-1 truncate">{item.menu.name}</span>
+                  <span className="text-primary font-bold">{item.count}회</span>
                 </div>
               )
             })}

@@ -25,12 +25,16 @@ export interface FortuneState {
 export interface DailyFortuneStat {
   menu: LunchMenu
   count: number
-  pct: number
 }
 
 export interface DailyFortuneStatsResult {
   stats: DailyFortuneStat[]
   total: number
+}
+
+export interface TopFortuneMenu {
+  menu: LunchMenu
+  count: number
 }
 
 function createAdminClient() {
@@ -150,6 +154,26 @@ export async function drawFortuneAction(): Promise<DrawResult> {
   }
 }
 
+export async function getTopFortuneMenus(limit = 3): Promise<TopFortuneMenu[]> {
+  const supabase = await createServerClient()
+  const { data, error } = await supabase
+    .from('alltime_fortune_stats')
+    .select('menu_name, menu_emoji, menu_category, draw_count')
+    .order('draw_count', { ascending: false })
+    .order('menu_name', { ascending: true })
+    .limit(limit)
+
+  if (error) {
+    console.error('getTopFortuneMenus error:', error.message)
+    return []
+  }
+
+  return (data ?? []).map((row) => ({
+    menu: { name: row.menu_name, emoji: row.menu_emoji, category: row.menu_category },
+    count: row.draw_count,
+  }))
+}
+
 export async function getTodayFortuneStats(): Promise<DailyFortuneStatsResult> {
   const today = await getKstToday()
   if (!today) return { stats: [], total: 0 }
@@ -174,7 +198,6 @@ export async function getTodayFortuneStats(): Promise<DailyFortuneStatsResult> {
     .map((row) => ({
       menu: { name: row.menu_name, emoji: row.menu_emoji, category: row.menu_category },
       count: row.draw_count,
-      pct: total > 0 ? Math.round((row.draw_count / total) * 100) : 0,
     }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 6)

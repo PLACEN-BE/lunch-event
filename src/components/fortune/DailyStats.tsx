@@ -69,8 +69,8 @@ export function DailyStats({ stats, total }: DailyStatsProps) {
                 transition={{ delay: i * 0.08 + 0.2, duration: 0.6, ease: 'easeOut' }}
               />
             </div>
-            <span className="text-xs font-bold text-foreground/50 w-10 text-right tabular-nums shrink-0">
-              {stat.pct}%
+            <span className="text-xs font-bold text-foreground/50 w-12 text-right tabular-nums shrink-0">
+              {stat.count}회
             </span>
           </motion.div>
         ))}
