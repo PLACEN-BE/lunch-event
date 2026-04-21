@@ -23,9 +23,13 @@ export async function submitMenuVote(menuCategory: string) {
 
   if (error) {
     if (error.code === '23505') {
-      return { error: '오늘은 이미 투표했습니다.' }
+      return { error: '오늘은 이미 먹픽했어요.' }
     }
-    return { error: '투표 중 오류가 발생했습니다.' }
+    if (error.code === '23503') {
+      return { error: '세션 정보가 유효하지 않습니다. 다시 로그인해주세요.' }
+    }
+    console.error('submitMenuVote error:', error.code, error.message, error.details)
+    return { error: `먹픽 중 오류가 발생했어요. (${error.code ?? 'unknown'})` }
   }
 
   revalidatePath('/ranking')

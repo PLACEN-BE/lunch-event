@@ -7,7 +7,7 @@ const navItems = [
   { href: '/', label: '홈', icon: '🏠' },
   { href: '/game', label: '게임', icon: '🎮' },
   { href: '/pick', label: '뽑기', icon: '🎯' },
-  { href: '/vote', label: '투표', icon: '🍽️' },
+  { href: '/vote', label: '먹픽', icon: '🍽️' },
   { href: '/fortune', label: '운세', icon: '🔮' },
   { href: '/ranking', label: '랭킹', icon: '🏆' },
   { href: '/my', label: 'MY', icon: '👤' },

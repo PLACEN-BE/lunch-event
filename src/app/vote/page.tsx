@@ -15,7 +15,7 @@ export default async function VotePage() {
           오늘 점심<br /><span className="text-primary">뭐 먹었어?</span> 🍽️
         </h1>
         <p className="text-sm text-foreground/40 mt-1">
-          {dateStr} · {todayVote ? '오늘 투표 완료!' : '탭해서 선택하세요'}
+          {dateStr} · {todayVote ? '오늘의 먹픽 완료! 🎉' : '탭해서 먹픽하세요'}
         </p>
       </div>
       <MenuGrid todayVote={todayVote} />

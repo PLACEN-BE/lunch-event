@@ -85,9 +85,89 @@ function BestSection({ best, rankings }: { best: MenuVoteEntry; rankings: MenuVo
 }
 
 // === Worst Section ===
+const SILLY_EMOJIS = ['🤡', '🌶️', '🫠', '🙃', '🥴', '💀', '🪳', '🧻', '🧦', '🥟', '🤪', '🙈', '💩', '😂', '🫨', '🫥', '🫡']
+const SILLY_MESSAGES = [
+  '이거 실화냐 ㅋㅋㅋㅋㅋ',
+  '할 말 많지만 참는다 🤐',
+  '...그래도 밥은 먹었잖아',
+  '인생 뭐 있어 🫠',
+  '다음 주 나만 믿어 🙃',
+  '오히려 좋아... (?)',
+  '그럴 수도 있지 💀',
+  '아이고 의미없다 🙈',
+  '힘내라ㅏㅏㅏ!! 🫨',
+  '응 아니야 🤪',
+]
+
 function WorstSection({ worst }: { worst: MenuVoteEntry }) {
   const [comforted, setComforted] = useState(false)
+  const [sillyMsg, setSillyMsg] = useState<string | null>(null)
+  const [shakeKey, setShakeKey] = useState(0)
   const emoji = emojiMap.get(worst.menu_category) ?? '🍽️'
+
+  const fireSillyConfetti = useCallback(async () => {
+    const confetti = (await import('canvas-confetti')).default
+    const scalar = 2.2
+    const shapes = SILLY_EMOJIS.map((t) => confetti.shapeFromText({ text: t, scalar }))
+
+    // 1차: 위에서 우수수 떨어짐
+    confetti({
+      particleCount: 70,
+      spread: 120,
+      startVelocity: 35,
+      gravity: 1.0,
+      scalar,
+      shapes,
+      origin: { x: 0.5, y: 0 },
+      ticks: 500,
+    })
+    // 2차: 좌우 사이드 포
+    setTimeout(() => {
+      confetti({
+        particleCount: 45,
+        angle: 45,
+        spread: 70,
+        startVelocity: 70,
+        gravity: 0.9,
+        scalar,
+        shapes,
+        origin: { x: 0, y: 0.75 },
+        ticks: 460,
+      })
+      confetti({
+        particleCount: 45,
+        angle: 135,
+        spread: 70,
+        startVelocity: 70,
+        gravity: 0.9,
+        scalar,
+        shapes,
+        origin: { x: 1, y: 0.75 },
+        ticks: 460,
+      })
+    }, 250)
+    // 3차: 중앙 대폭발
+    setTimeout(() => {
+      confetti({
+        particleCount: 90,
+        spread: 200,
+        startVelocity: 55,
+        gravity: 0.8,
+        scalar,
+        shapes,
+        origin: { x: 0.5, y: 0.3 },
+        ticks: 500,
+      })
+    }, 550)
+  }, [])
+
+  const handleSilly = () => {
+    setComforted(true)
+    setSillyMsg(SILLY_MESSAGES[Math.floor(Math.random() * SILLY_MESSAGES.length)])
+    setShakeKey((k) => k + 1)
+    fireSillyConfetti()
+    setTimeout(() => setSillyMsg(null), 2600)
+  }
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
@@ -95,7 +175,12 @@ function WorstSection({ worst }: { worst: MenuVoteEntry }) {
         😢 이번 주 WORST 메뉴
       </span>
 
-      <div className={`bg-card rounded-3xl p-6 shadow-lg text-center relative overflow-hidden transition-colors duration-700 ${comforted ? 'bg-emerald-50' : ''}`}>
+      <motion.div
+        key={`card-${shakeKey}`}
+        animate={shakeKey > 0 ? { x: [0, -12, 12, -10, 10, -8, 8, -4, 4, 0], rotate: [0, -2, 2, -2, 2, -1, 1, 0] } : undefined}
+        transition={{ duration: 0.7 }}
+        className={`bg-card rounded-3xl p-6 shadow-lg text-center relative overflow-hidden transition-colors duration-700 ${comforted ? 'bg-emerald-50' : ''}`}
+      >
         {!comforted && (
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             {Array.from({ length: 15 }).map((_, i) => (
@@ -106,8 +191,29 @@ function WorstSection({ worst }: { worst: MenuVoteEntry }) {
           </div>
         )}
 
-        <motion.img src="/event/sad.gif" alt="슬픈 짤" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className="w-48 h-48 object-cover rounded-2xl mx-auto my-3 relative z-10 shadow-md" />
+        <AnimatePresence>
+          {sillyMsg && (
+            <motion.div
+              key={sillyMsg + shakeKey}
+              initial={{ opacity: 0, y: 30, scale: 0.4, rotate: -10 }}
+              animate={{ opacity: 1, y: -6, scale: 1, rotate: -4 }}
+              exit={{ opacity: 0, y: -60, rotate: 6 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 14 }}
+              className="absolute left-1/2 -translate-x-1/2 top-3 z-20 bg-white text-red-500 font-black text-base px-4 py-2 rounded-2xl shadow-xl border-2 border-red-300 whitespace-nowrap"
+            >
+              {sillyMsg}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <motion.img
+          src="/event/sad.gif"
+          alt="슬픈 짤"
+          initial={{ opacity: 0 }}
+          animate={shakeKey > 0 ? { opacity: 1, rotate: [0, 20, -20, 15, -15, 0], scale: [1, 1.1, 0.95, 1.05, 1] } : { opacity: 1 }}
+          transition={{ duration: 0.7 }}
+          className="w-48 h-48 object-cover rounded-2xl mx-auto my-3 relative z-10 shadow-md"
+        />
 
         <p className="text-4xl relative z-10">{emoji}</p>
         <p className="text-lg font-black relative z-10">📉 {worst.menu_category}</p>
@@ -122,13 +228,15 @@ function WorstSection({ worst }: { worst: MenuVoteEntry }) {
             🌈✨💖
           </motion.div>
         )}
-      </div>
+      </motion.div>
 
-      <motion.button whileTap={{ scale: 0.95 }} onClick={() => setComforted(true)}
+      <motion.button
+        whileTap={{ scale: 0.9, rotate: -3 }}
+        onClick={handleSilly}
         className={`w-full py-3 rounded-2xl font-bold text-white shadow-md transition-all ${
-          comforted ? 'bg-gradient-to-r from-primary to-emerald-400' : 'bg-gradient-to-r from-red-400 to-blue-400'
+          comforted ? 'bg-gradient-to-r from-fuchsia-400 via-amber-300 to-emerald-400' : 'bg-gradient-to-r from-red-400 to-blue-400'
         }`}>
-        {comforted ? '간바레! 힘내!! 💪🥹' : '간바레! 힘내 💌'}
+        {comforted ? '한 번 더 병맛 주입! 🤡💊' : '간바레! 힘내 💌'}
       </motion.button>
     </motion.div>
   )
@@ -162,7 +270,46 @@ function MvpSection({ mvp, bestMenu }: { mvp: MenuMvpEntry; bestMenu: string }) 
 
   const fireConfetti = useCallback(async () => {
     const confetti = (await import('canvas-confetti')).default
-    confetti({ particleCount: 80, spread: 70, origin: { y: 0.5 }, colors: ['#22c55e', '#3b82f6', '#fbbf24', '#f472b6'] })
+    const colors = ['#22c55e', '#3b82f6', '#fbbf24', '#f472b6', '#ef4444', '#a855f7', '#ffffff']
+    const end = Date.now() + 2600
+
+    const burst = () => {
+      // 좌측 포문
+      confetti({
+        particleCount: 30,
+        angle: 60,
+        spread: 80,
+        startVelocity: 95,
+        origin: { x: 0, y: 0.9 },
+        colors,
+        scalar: 1.05,
+        ticks: 320,
+      })
+      // 우측 포문
+      confetti({
+        particleCount: 30,
+        angle: 120,
+        spread: 80,
+        startVelocity: 95,
+        origin: { x: 1, y: 0.9 },
+        colors,
+        scalar: 1.05,
+        ticks: 320,
+      })
+      // 중앙 수직 폭발 (헤드샷)
+      confetti({
+        particleCount: 22,
+        angle: 90,
+        spread: 130,
+        startVelocity: 65,
+        origin: { x: 0.5, y: 0.95 },
+        colors,
+        scalar: 1.1,
+        ticks: 320,
+      })
+      if (Date.now() < end) requestAnimationFrame(() => setTimeout(burst, 35))
+    }
+    burst()
   }, [])
 
   useEffect(() => {
@@ -249,10 +396,10 @@ export function MenuHallOfFame({ rankings, mvp }: MenuHallOfFameProps) {
     return (
       <div className="text-center py-16 text-foreground/40">
         <div className="text-5xl mb-3">🍽️</div>
-        <p className="font-bold">아직 이번 주 투표가 없습니다</p>
-        <p className="text-sm mt-1">먼저 오늘의 메뉴를 투표해보세요!</p>
+        <p className="font-bold">아직 이번 주 먹픽 기록이 없어요</p>
+        <p className="text-sm mt-1">먼저 오늘의 점심을 먹픽해 보세요!</p>
         <Link href="/vote" className="inline-block mt-4 px-5 py-2.5 rounded-2xl bg-primary text-white font-bold shadow-md">
-          투표하러 가기 🗳️
+          먹픽하러 가기 🫵
         </Link>
       </div>
     )

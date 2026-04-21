@@ -95,7 +95,7 @@ export function MenuGrid({ todayVote }: MenuGridProps) {
                   : 'bg-foreground/20 shadow-none cursor-not-allowed'
               }`}
             >
-              {isPending ? '투표 중...' : '투표하기 🗳️'}
+              {isPending ? '먹픽 중...' : '먹픽! 🫵'}
             </button>
           )}
         </div>
