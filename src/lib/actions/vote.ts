@@ -17,14 +17,17 @@ export async function submitMenuVote(menuCategory: string) {
 
   const supabase = await createClient()
 
+  const today = new Date().toISOString().split('T')[0]
+
+  // 하루 1회 투표는 유지하되, 같은 날 재투표 시 기존 기록을 교체 (upsert)
   const { error } = await supabase
     .from('menu_votes')
-    .insert({ user_id: user.id, menu_category: menuCategory })
+    .upsert(
+      { user_id: user.id, menu_category: menuCategory, voted_at: today },
+      { onConflict: 'user_id,voted_at' },
+    )
 
   if (error) {
-    if (error.code === '23505') {
-      return { error: '오늘은 이미 먹픽했어요.' }
-    }
     if (error.code === '23503') {
       return { error: '세션 정보가 유효하지 않습니다. 다시 로그인해주세요.' }
     }
@@ -33,6 +36,7 @@ export async function submitMenuVote(menuCategory: string) {
   }
 
   revalidatePath('/ranking')
+  revalidatePath('/')
   return { success: true }
 }
 
