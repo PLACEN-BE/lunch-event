@@ -109,21 +109,17 @@ export function MenuGrid({ todayVote }: MenuGridProps) {
       {error && <p className="text-center text-red-500 text-sm font-semibold">{error}</p>}
 
       {!voted && (
-        <div className="fixed bottom-16 left-0 right-0 px-4 pb-safe">
-          <div className="max-w-md mx-auto">
-            <button
-              onClick={handleVote}
-              disabled={!selected || isPending}
-              className={`w-full py-3.5 rounded-2xl font-extrabold text-white shadow-lg transition-all ${
-                selected
-                  ? 'bg-gradient-to-r from-blue-500 to-primary shadow-primary/25'
-                  : 'bg-foreground/20 shadow-none cursor-not-allowed'
-              }`}
-            >
-              {isPending ? '기록 중...' : '기록하기'}
-            </button>
-          </div>
-        </div>
+        <button
+          onClick={handleVote}
+          disabled={!selected || isPending}
+          className={`w-full py-3.5 rounded-2xl font-extrabold text-white shadow-lg transition-all ${
+            selected
+              ? 'bg-gradient-to-r from-blue-500 to-primary shadow-primary/25'
+              : 'bg-foreground/20 shadow-none cursor-not-allowed'
+          }`}
+        >
+          {isPending ? '기록 중...' : '기록하기'}
+        </button>
       )}
     </div>
   )
