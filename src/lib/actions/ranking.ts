@@ -14,17 +14,6 @@ export async function getMonthlyRanking(): Promise<RankingEntry[]> {
   return data ?? []
 }
 
-export async function getAllTimeRanking(): Promise<RankingEntry[]> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('alltime_rankings')
-    .select('*')
-    .limit(10)
-
-  if (error) return []
-  return data ?? []
-}
-
 export async function getRecentEvents() {
   const supabase = await createClient()
   const { data } = await supabase
