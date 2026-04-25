@@ -29,6 +29,7 @@
     "postcss": "^8.5.9",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
+    "react-kakao-maps-sdk": "^1.2.1",
     "tailwindcss": "^4.2.2",
     "typescript": "^6.0.2",
     "zustand": "^5.0.12"

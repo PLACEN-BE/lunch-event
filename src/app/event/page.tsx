@@ -32,7 +32,7 @@ const menus = [
   { emoji: '🍚', name: '한식' }, { emoji: '🍜', name: '중식' },
   { emoji: '🍝', name: '양식' }, { emoji: '🍣', name: '일식' },
   { emoji: '🍔', name: '패스트푸드' }, { emoji: '🥗', name: '샐러드' },
-  { emoji: '🍛', name: '카레/태국' }, { emoji: '🥪', name: '샌드위치' },
+  { emoji: '🍛', name: '아시안' }, { emoji: '🥪', name: '샌드위치' },
   { emoji: '🍱', name: '도시락' }, { emoji: '🤷', name: '기타' },
 ]
 

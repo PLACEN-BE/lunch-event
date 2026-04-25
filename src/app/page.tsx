@@ -33,6 +33,30 @@ export default async function HomePage() {
         <div className="text-white/70 text-sm mt-1">게임 시작하기 →</div>
       </Link>
 
+      {/* Restaurant CTAs */}
+      <div className="grid grid-cols-2 gap-3">
+        <Link
+          href="/place"
+          className="block bg-white rounded-3xl p-4 shadow-sm active:scale-[0.98] transition-transform"
+        >
+          <div className="w-10 h-10 rounded-2xl bg-orange-50 flex items-center justify-center text-xl mb-2">
+            🍱
+          </div>
+          <div className="font-black text-sm">맛집 리뷰</div>
+          <div className="text-[11px] text-foreground/50 mt-0.5">후기 보기/남기기 →</div>
+        </Link>
+        <Link
+          href="/place/new"
+          className="block bg-white rounded-3xl p-4 shadow-sm active:scale-[0.98] transition-transform"
+        >
+          <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-xl mb-2">
+            ➕
+          </div>
+          <div className="font-black text-sm">맛집 등록</div>
+          <div className="text-[11px] text-foreground/50 mt-0.5">주소 검색으로 등록 →</div>
+        </Link>
+      </div>
+
       {/* Today Lunch Vote */}
       {user && (
         <section>
