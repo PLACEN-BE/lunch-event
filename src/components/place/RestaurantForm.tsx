@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   createRestaurant,
@@ -8,9 +8,31 @@ import {
   type PlaceSearchResult,
 } from '@/lib/actions/restaurants'
 import { MENU_CATEGORIES, inferCategoryFromKakao } from '@/types'
+import { OFFICE_CENTER } from '@/lib/constants/office'
+import { distanceMeters, formatDistance } from '@/lib/utils/distance'
 import RegisterMap from './RegisterMap'
+import ProofGateModal from './ProofGateModal'
 
 const CATEGORIES = MENU_CATEGORIES
+const GATE_AGREED_KEY = 'lunch_event:place_proof_gate_agreed_v1'
+
+function hasAgreedBefore() {
+  if (typeof window === 'undefined') return false
+  try {
+    return window.localStorage.getItem(GATE_AGREED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function markAgreed() {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(GATE_AGREED_KEY, '1')
+  } catch {
+    /* noop */
+  }
+}
 
 export default function RestaurantForm() {
   const router = useRouter()
@@ -28,6 +50,7 @@ export default function RestaurantForm() {
   const [info, setInfo] = useState<string | null>(null)
   const [searching, startSearch] = useTransition()
   const [submitting, startSubmit] = useTransition()
+  const [gateOpen, setGateOpen] = useState(false)
 
   function onSearch() {
     setError(null)
@@ -50,6 +73,15 @@ export default function RestaurantForm() {
     })
   }
 
+  const sortedResults = useMemo(() => {
+    return results
+      .map((r) => ({
+        ...r,
+        distanceM: distanceMeters(OFFICE_CENTER, { lat: r.lat, lng: r.lng }),
+      }))
+      .sort((a, b) => a.distanceM - b.distanceM)
+  }, [results])
+
   function pickResult(r: PlaceSearchResult) {
     setName(r.name)
     setAddress(r.address)
@@ -70,6 +102,15 @@ export default function RestaurantForm() {
       setError('검색 결과를 선택해 위치를 먼저 확인해주세요.')
       return
     }
+    if (hasAgreedBefore()) {
+      runCreate()
+      return
+    }
+    setGateOpen(true)
+  }
+
+  function runCreate() {
+    if (!pin) return
     startSubmit(async () => {
       const res = await createRestaurant({
         name,
@@ -84,6 +125,12 @@ export default function RestaurantForm() {
       }
       router.push(`/place/${res.id}`)
     })
+  }
+
+  function onGatePass() {
+    markAgreed()
+    setGateOpen(false)
+    runCreate()
   }
 
   return (
@@ -122,33 +169,45 @@ export default function RestaurantForm() {
           )}
         </div>
 
-        {results.length > 0 && (
-          <ul className="space-y-1 max-h-72 overflow-auto">
-            {results.map((r, i) => {
-              const selected = pin?.lat === r.lat && pin?.lng === r.lng
-              return (
-                <li key={`${r.lat}-${r.lng}-${i}`}>
-                  <button
-                    type="button"
-                    onClick={() => pickResult(r)}
-                    className={`w-full text-left px-3 py-2.5 rounded-2xl transition-colors ${
-                      selected ? 'bg-primary/10 ring-1 ring-primary/40' : 'hover:bg-background'
-                    }`}
-                  >
-                    <p className="text-sm font-bold truncate">{r.name}</p>
-                    <p className="text-[11px] text-foreground/50 truncate mt-0.5">
-                      {r.address}
-                    </p>
-                    {r.categoryGroup && (
-                      <p className="text-[10px] text-foreground/30 mt-0.5">
-                        {r.categoryGroup}
-                      </p>
-                    )}
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
+        {sortedResults.length > 0 && (
+          <>
+            <p className="text-[10px] text-foreground/40">
+              🏢 플레이스앤 기준 가까운 순
+            </p>
+            <ul className="space-y-1 max-h-72 overflow-auto">
+              {sortedResults.map((r, i) => {
+                const selected = pin?.lat === r.lat && pin?.lng === r.lng
+                return (
+                  <li key={`${r.lat}-${r.lng}-${i}`}>
+                    <button
+                      type="button"
+                      onClick={() => pickResult(r)}
+                      className={`w-full text-left px-3 py-2.5 rounded-2xl transition-colors ${
+                        selected ? 'bg-primary/10 ring-1 ring-primary/40' : 'hover:bg-background'
+                      }`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold truncate">{r.name}</p>
+                          <p className="text-[11px] text-foreground/50 truncate mt-0.5">
+                            {r.address}
+                          </p>
+                          {r.categoryGroup && (
+                            <p className="text-[10px] text-foreground/30 mt-0.5">
+                              {r.categoryGroup}
+                            </p>
+                          )}
+                        </div>
+                        <span className="shrink-0 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                          🏢 {formatDistance(r.distanceM)}
+                        </span>
+                      </div>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </>
         )}
       </div>
 
@@ -228,6 +287,12 @@ export default function RestaurantForm() {
       >
         {submitting ? '등록 중...' : '🍱 맛집 등록하기'}
       </button>
+
+      <ProofGateModal
+        open={gateOpen}
+        onCancel={() => setGateOpen(false)}
+        onPass={onGatePass}
+      />
     </form>
   )
 }
