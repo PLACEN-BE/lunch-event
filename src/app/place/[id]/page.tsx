@@ -7,6 +7,7 @@ import { listReviews } from '@/lib/actions/reviews'
 import PlaceMap from '@/components/place/PlaceMap'
 import ReviewForm from '@/components/place/ReviewForm'
 import ReviewList from '@/components/place/ReviewList'
+import DeleteRestaurantButton from '@/components/place/DeleteRestaurantButton'
 
 const emojiByName = new Map<string, string>(
   MENU_CATEGORIES.map((c) => [c.name, c.emoji])
@@ -80,6 +81,15 @@ export default async function PlacePage({
         currentUserId={currentUser?.id ?? null}
         restaurantId={restaurant.id}
       />
+
+      {currentUser && (
+        <div className="pt-2 flex justify-end">
+          <DeleteRestaurantButton
+            restaurantId={restaurant.id}
+            reviewCount={reviews.length}
+          />
+        </div>
+      )}
     </div>
   )
 }

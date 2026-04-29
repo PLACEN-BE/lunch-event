@@ -123,6 +123,9 @@ export default function RestaurantForm() {
         setError(res.error)
         return
       }
+      if (res.duplicate) {
+        setInfo('이미 등록된 맛집이에요. 기존 매장으로 이동합니다.')
+      }
       router.push(`/place/${res.id}`)
     })
   }

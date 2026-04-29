@@ -5,6 +5,12 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from './auth'
 import type { Restaurant } from '@/types'
 
+// 이름·주소 비교용 정규화: 모든 공백 제거 + 소문자.
+// "판교 김밥천국" === "판교김밥천국", "경기 성남시" === "경기성남시" 로 취급.
+function normalizeKey(s: string | null | undefined): string {
+  return (s ?? '').replace(/\s+/g, '').toLowerCase()
+}
+
 export interface GeocodeResult {
   lat: number
   lng: number
@@ -114,7 +120,10 @@ export async function createRestaurant(input: {
   category: string | null
   lat: number
   lng: number
-}): Promise<{ success: true; id: string } | { error: string }> {
+}): Promise<
+  | { success: true; id: string; duplicate?: boolean }
+  | { error: string }
+> {
   const user = await getCurrentUser()
   if (!user) return { error: '로그인이 필요합니다.' }
 
@@ -129,6 +138,23 @@ export async function createRestaurant(input: {
   }
 
   const supabase = await createClient()
+
+  // 중복 체크: 모든 후보를 가져와 JS에서 공백 무시 + 소문자 비교.
+  // 이름·주소 모두 일치하면 동일 매장으로 판단해 기존 id 반환.
+  const { data: candidates } = await supabase
+    .from('restaurants')
+    .select('id, name, address')
+
+  const targetName = normalizeKey(name)
+  const targetAddr = normalizeKey(address)
+
+  const existing = (candidates ?? []).find(
+    (r) => normalizeKey(r.name) === targetName && normalizeKey(r.address) === targetAddr,
+  )
+  if (existing) {
+    return { success: true, id: existing.id as string, duplicate: true }
+  }
+
   const { data, error } = await supabase
     .from('restaurants')
     .insert({ name, address, category, lat: input.lat, lng: input.lng })
@@ -142,6 +168,25 @@ export async function createRestaurant(input: {
 
   revalidatePath('/place')
   return { success: true, id: data.id as string }
+}
+
+export async function deleteRestaurant(
+  id: string,
+): Promise<{ success: true } | { error: string }> {
+  const user = await getCurrentUser()
+  if (!user) return { error: '로그인이 필요합니다.' }
+
+  const supabase = await createClient()
+  const { error } = await supabase.from('restaurants').delete().eq('id', id)
+
+  if (error) {
+    console.error('deleteRestaurant error:', error.message)
+    return { error: '삭제 실패: ' + error.message }
+  }
+
+  revalidatePath('/place')
+  revalidatePath(`/place/${id}`)
+  return { success: true }
 }
 
 export async function getRestaurant(id: string): Promise<Restaurant | null> {
